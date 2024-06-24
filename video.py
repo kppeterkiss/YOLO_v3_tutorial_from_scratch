@@ -34,7 +34,11 @@ def arg_parse():
                         "Input resolution of the network. Increase to increase accuracy. Decrease to increase speed",
                         default = "416", type = str)
     parser.add_argument("--video", dest = "videofile", help = "Video file to     run detection on", default = "video.avi", type = str)
-    
+    parser.add_argument('--count_people',
+                        action='store_true',help="Switch on people counting mode")
+    parser.add_argument('--save_sample',
+                        action='store_true', help="If present save a sample gif")
+
     return parser.parse_args()
     
 args = arg_parse()
@@ -73,17 +77,19 @@ model.eval()
 
 
 def write(x, results):
-    c1 = tuple(x[1:3].int())
-    c2 = tuple(x[3:5].int())
+    c1 = tuple(x[1:3].int().numpy())
+    c2 = tuple(x[3:5].int().numpy())
     img = results
     cls = int(x[-1])
+    print("cls: ",cls)
     color = random.choice(colors)
     label = "{0}".format(classes[cls])
-    cv2.rectangle(img, c1, c2,color, 1)
-    t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1 , 1)[0]
-    c2 = c1[0] + t_size[0] + 3, c1[1] + t_size[1] + 4
-    cv2.rectangle(img, c1, c2,color, -1)
-    cv2.putText(img, label, (c1[0], c1[1] + t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 1, [225,255,255], 1);
+    if ((args.count_people) and label=='person') or (not args.count_people) :
+        cv2.rectangle(img, c1, c2,color, 1)
+        t_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1 , 1)[0]
+        c2 = c1[0] + t_size[0] + 3, c1[1] + t_size[1] + 4
+        cv2.rectangle(img, c1, c2,color, -1)
+        cv2.putText(img, label, (c1[0], c1[1] + t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 1, [225,255,255], 1);
     return img
 
 
@@ -99,11 +105,17 @@ assert cap.isOpened(), 'Cannot capture source'
 
 frames = 0  
 start = time.time()
+import imageio
+
+frames_to_save = []
+saved=False
+frame_count = 0
 
 while cap.isOpened():
     ret, frame = cap.read()
     
-    if ret:   
+    if ret:
+        frame_count+=1
         img = prep_image(frame, inp_dim)
 #        cv2.imshow("a", frame)
         im_dim = frame.shape[1], frame.shape[0]
@@ -116,7 +128,6 @@ while cap.isOpened():
         with torch.no_grad():
             output = model(Variable(img, volatile = True), CUDA)
         output = write_results(output, confidence, num_classes, nms_conf = nms_thesh)
-
 
         if type(output) == int:
             frames += 1
@@ -147,10 +158,24 @@ while cap.isOpened():
 
         classes = load_classes('data/coco.names')
         colors = pkl.load(open("pallete", "rb"))
-
+        cn=sum([1 if (x[-1]==0) else 0 for x in output ])
         list(map(lambda x: write(x, frame), output))
-        
+        if args.count_people:
+            cv2.putText(frame, f"Count: {cn}", (10, 10), cv2.FONT_HERSHEY_PLAIN, 1, [225,255,255], 1);
         cv2.imshow("frame", frame)
+        if args.save_sample:
+            if frame_count<=30 :
+                frames_to_save.append(frame)
+            elif not saved:
+                saved=True
+                print("Saving GIF file")
+                prefix="out_"
+                if args.count_people:
+                    prefix+='pc_'
+                with imageio.get_writer('det/'+prefix+videofile, mode="I") as writer:
+                    for idx, frame in enumerate(frames_to_save):
+                        print("Adding frame to GIF file: ", idx + 1)
+                        writer.append_data(frame)
         key = cv2.waitKey(1)
         if key & 0xFF == ord('q'):
             break

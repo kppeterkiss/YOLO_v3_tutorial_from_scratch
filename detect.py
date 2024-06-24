@@ -184,8 +184,10 @@ draw = time.time()
 
 
 def write(x, results):
-    c1 = tuple(x[1:3].int())
-    c2 = tuple(x[3:5].int())
+    c1 = tuple(x[1:3].int().numpy())
+    c2 = tuple(x[3:5].int().numpy())
+    print(c1)
+    print(c2)
     img = results[int(x[0])]
     cls = int(x[-1])
     color = random.choice(colors)
