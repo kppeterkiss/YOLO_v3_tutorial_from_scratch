@@ -1,22 +1,25 @@
 # People Counting  Yolo 3
 
-![Counting people on train 1](det/out_pc_metro.gif)
-
-![Counting people on train 2](det/out_pc_metro2.gif)
-
-based on:
+This is a simple yolo application that is intended to count people on images and videos. The code with minimal modifications originates from:
 
 https://blog.paperspace.com/tag/series-yolo/
 
 https://github.com/ayooshkathuria/YOLO_v3_tutorial_from_scratch?ref=blog.paperspace.com
 
+Some example outputs:
+
+![Counting people on train 1](det/out_pc_metro.gif)
+
+![Counting people on train 2](det/out_pc_metro2.gif)
+
 
 
 # Using the original multi-class object detection:
 
-```python detect.py --images dog-cycle-car.png --det det```
 
-```python video.py --video metro.gif```
+- processing images: ```python detect.py --images dog-cycle-car.png --det det```
+
+- processing videos: ```python video.py --video metro.gif```
 
 # Changes relative to original project: 
 - migrating to  up-to-date packages
@@ -26,8 +29,6 @@ https://github.com/ayooshkathuria/YOLO_v3_tutorial_from_scratch?ref=blog.papersp
 ### Counting people mode:
  ```python video.py --count_people --video  metro.gif```
 
-### for saving video:
- ```conda install conda-forge::imageio```
 
 ### Saving sample: 
 ```python video.py --video --count_people --save_sample metro.gif``` 
@@ -46,10 +47,17 @@ https://github.com/ayooshkathuria/YOLO_v3_tutorial_from_scratch?ref=blog.papersp
 
 - opencv                    4.10.0 
 
-### Setup
+( for saving video:)
+- imageio                   2.34.2 
 
-- ```conda install python conda-forge::opencv pytorch::pytorch numpy pandas```
-- ```wget https://pjreddie.com/media/files/yolov3``` 
+
+
+
+### Setup
+- ```git clone https://github.com/kppeterkiss/YOLO_v3_tutorial_from_scratch.git```
+- ```cd YOLO_v3_tutorial_from_scratch```
+- ```conda install python conda-forge::opencv pytorch::pytorch numpy pandas conda-forge::imageio```
+- ```wget https://pjreddie.com/media/files/yolov3.weights ```
 
 
 
