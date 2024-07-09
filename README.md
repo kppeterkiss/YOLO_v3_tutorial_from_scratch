@@ -31,7 +31,7 @@ Some example outputs:
 
 
 ### Saving sample: 
-```python video.py --video --count_people --save_sample metro.gif``` 
+```python video.py  --count_people --save_sample --video metro.gif``` 
 
 
 # Setup
